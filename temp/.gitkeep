@@ -1,0 +1,2 @@
+# Marcador para conservar el directorio temp en git.
+# Los archivos de diagnóstico aquí generados están ignorados en .gitignore.
