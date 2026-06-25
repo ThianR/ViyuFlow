@@ -117,8 +117,8 @@ class _ScheduledScreenState extends State<ScheduledScreen> {
                         onLongPress: () => _deleteItem(item),
                         leading: CircleAvatar(
                           backgroundColor: item.type == 'income'
-                              ? AppColors.income.withOpacity(0.2)
-                              : AppColors.expense.withOpacity(0.2),
+                              ? AppColors.income.withValues(alpha: 0.2)
+                              : AppColors.expense.withValues(alpha: 0.2),
                           child: Icon(
                             item.type == 'income'
                                 ? Icons.arrow_downward
@@ -161,7 +161,7 @@ class _ScheduledScreenState extends State<ScheduledScreen> {
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                   margin: const EdgeInsets.only(top: 4),
                                   decoration: BoxDecoration(
-                                    color: AppColors.primary.withOpacity(0.2),
+                                    color: AppColors.primary.withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(4),
                                     border: Border.all(color: AppColors.primary),
                                   ),

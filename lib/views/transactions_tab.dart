@@ -68,7 +68,7 @@ class TransactionsTabState extends State<TransactionsTab> {
       
       _applyFilters();
     } catch (e) {
-      print('Error al recargar transacciones: $e');
+      debugPrint('Error al recargar transacciones: $e');
       setState(() => _isLoading = false);
     }
   }
@@ -242,7 +242,7 @@ class TransactionsTabState extends State<TransactionsTab> {
                         });
                         _applyFilters();
                       });
-                    }).toList(),
+                    }),
                   ],
                 ),
               ),
@@ -262,7 +262,7 @@ class TransactionsTabState extends State<TransactionsTab> {
                         });
                         _applyFilters();
                       });
-                    }).toList(),
+                    }),
                   ],
                 ),
               ),
@@ -282,9 +282,9 @@ class TransactionsTabState extends State<TransactionsTab> {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppColors.income.withOpacity(0.12),
+                        color: AppColors.income.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.income.withOpacity(0.2), width: 1),
+                        border: Border.all(color: AppColors.income.withValues(alpha: 0.2), width: 1),
                       ),
                       child: Row(
                         children: [
@@ -315,9 +315,9 @@ class TransactionsTabState extends State<TransactionsTab> {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppColors.expense.withOpacity(0.12),
+                        color: AppColors.expense.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.expense.withOpacity(0.2), width: 1),
+                        border: Border.all(color: AppColors.expense.withValues(alpha: 0.2), width: 1),
                       ),
                       child: Row(
                         children: [
@@ -455,7 +455,7 @@ class TransactionsTabState extends State<TransactionsTab> {
                             },
                             child: ListTile(
                               leading: CircleAvatar(
-                                backgroundColor: Color(catColorHex).withOpacity(0.12),
+                                backgroundColor: Color(catColorHex).withValues(alpha: 0.12),
                                 child: Icon(catIcon, color: Color(catColorHex), size: 20),
                               ),
                               title: Row(
@@ -552,7 +552,7 @@ class TransactionsTabState extends State<TransactionsTab> {
         margin: const EdgeInsets.symmetric(horizontal: 4),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary.withOpacity(0.2) : Colors.transparent,
+          color: isSelected ? AppColors.primary.withValues(alpha: 0.2) : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected ? AppColors.primary : Colors.white24,
@@ -579,7 +579,7 @@ class TransactionsTabState extends State<TransactionsTab> {
         margin: const EdgeInsets.symmetric(horizontal: 4),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary.withOpacity(0.2) : Colors.transparent,
+          color: isSelected ? AppColors.primary.withValues(alpha: 0.2) : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? AppColors.primary : Colors.white24,

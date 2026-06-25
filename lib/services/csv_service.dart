@@ -1,4 +1,5 @@
-import 'dart:convert';
+import 'package:flutter/foundation.dart' show debugPrint;
+
 import 'package:csv/csv.dart';
 import '../models/transaction.dart';
 import '../models/account.dart';
@@ -184,7 +185,7 @@ class CSVService {
         importCount++;
       } catch (e) {
         // En caso de error en una fila, se registra y se continúa con las demás filas
-        print('Error procesando fila $i en importación: $e');
+        debugPrint('Error procesando fila $i en importación: $e');
       }
     }
 

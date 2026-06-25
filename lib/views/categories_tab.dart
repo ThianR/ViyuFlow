@@ -51,7 +51,7 @@ class CategoriesTabState extends State<CategoriesTab> {
         _isLoading = false;
       });
     } catch (e) {
-      print('Error al recargar categorías: $e');
+      debugPrint('Error al recargar categorías: $e');
       setState(() => _isLoading = false);
     }
   }
@@ -366,7 +366,7 @@ class CategoriesTabState extends State<CategoriesTab> {
                           children: [
                             ListTile(
                               leading: CircleAvatar(
-                                backgroundColor: Color(colorHex).withOpacity(0.12),
+                                backgroundColor: Color(colorHex).withValues(alpha: 0.12),
                                 child: Icon(catIcon, color: Color(colorHex), size: 20),
                               ),
                               title: Text(

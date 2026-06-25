@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../database/db_helper.dart';
 import '../models/budget.dart';
+import '../models/account.dart';
 import '../models/category.dart';
 import '../models/subcategory.dart';
 import '../theme.dart';
@@ -22,9 +23,11 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
 
   double _amount = 0.0;
   String _currency = '₲';
+  Account? _selectedAccount;
   Category? _selectedCategory;
   Subcategory? _selectedSubcategory;
   
+  List<Account> _accounts = [];
   List<Category> _categories = [];
   List<Subcategory> _subcategories = [];
   bool _isLoading = true;
@@ -42,12 +45,18 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
 
   Future<void> _loadInitialData() async {
     _categories = await _dbHelper.getCategoriesByType('expense');
+    _accounts = await _dbHelper.getAllAccounts();
     
-    if (widget.budget != null && widget.budget!.categoryId != null) {
-      _selectedCategory = _categories.firstWhere((c) => c.id == widget.budget!.categoryId, orElse: () => _categories.first);
-      _subcategories = await _dbHelper.getSubcategoriesByCategory(_selectedCategory!.id!);
-      if (widget.budget!.subcategoryId != null) {
-        _selectedSubcategory = _subcategories.firstWhere((s) => s.id == widget.budget!.subcategoryId, orElse: () => _subcategories.first);
+    if (widget.budget != null) {
+      if (widget.budget!.accountId != null) {
+        _selectedAccount = _accounts.firstWhere((a) => a.id == widget.budget!.accountId, orElse: () => _accounts.first);
+      }
+      if (widget.budget!.categoryId != null) {
+        _selectedCategory = _categories.firstWhere((c) => c.id == widget.budget!.categoryId, orElse: () => _categories.first);
+        _subcategories = await _dbHelper.getSubcategoriesByCategory(_selectedCategory!.id!);
+        if (widget.budget!.subcategoryId != null) {
+          _selectedSubcategory = _subcategories.firstWhere((s) => s.id == widget.budget!.subcategoryId, orElse: () => _subcategories.first);
+        }
       }
     }
 
@@ -84,6 +93,7 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
       id: widget.budget?.id,
       amount: _amount,
       currency: _currency,
+      accountId: _selectedAccount?.id,
       categoryId: _selectedCategory?.id,
       subcategoryId: _selectedSubcategory?.id,
     );
@@ -135,7 +145,7 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
                 icon: const Icon(Icons.auto_awesome),
                 label: const Text('Autogenerar Presupuestos'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary.withOpacity(0.2),
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.2),
                   foregroundColor: AppColors.primary,
                 ),
               ),
@@ -184,9 +194,26 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
               ],
             ),
             const SizedBox(height: 24),
+            DropdownButtonFormField<Account?>(
+              dropdownColor: AppColors.cardBackground,
+              initialValue: _selectedAccount,
+              decoration: const InputDecoration(labelText: 'Cuenta (Opcional)'),
+              items: [
+                const DropdownMenuItem<Account?>(
+                  value: null,
+                  child: Text('(General - Todas las cuentas)', style: TextStyle(color: Colors.white54)),
+                ),
+                ..._accounts.map((a) => DropdownMenuItem(
+                  value: a,
+                  child: Text(a.name, style: const TextStyle(color: Colors.white)),
+                )),
+              ],
+              onChanged: (a) => setState(() => _selectedAccount = a),
+            ),
+            const SizedBox(height: 16),
             DropdownButtonFormField<Category?>(
               dropdownColor: AppColors.cardBackground,
-              value: _selectedCategory,
+              initialValue: _selectedCategory,
               decoration: const InputDecoration(labelText: 'Categoría (Opcional)'),
               items: [
                 const DropdownMenuItem<Category?>(
@@ -204,7 +231,7 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
               const SizedBox(height: 16),
               DropdownButtonFormField<Subcategory?>(
                 dropdownColor: AppColors.cardBackground,
-                value: _selectedSubcategory,
+                initialValue: _selectedSubcategory,
                 decoration: const InputDecoration(labelText: 'Subcategoría (Opcional)'),
                 items: [
                   const DropdownMenuItem<Subcategory?>(

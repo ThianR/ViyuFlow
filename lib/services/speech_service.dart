@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 /// Servicio encargado de controlar el micrófono y la transcripción de voz a texto.
@@ -20,11 +21,11 @@ class SpeechService {
 
     try {
       _isInitialized = await _speech.initialize(
-        onError: (val) => print('Error en Speech: $val'),
-        onStatus: (val) => print('Estado de Speech: $val'),
+        onError: (val) => debugPrint('Error en Speech: $val'),
+        onStatus: (val) => debugPrint('Estado de Speech: $val'),
       );
     } catch (e) {
-      print('Excepción al inicializar SpeechToText: $e');
+      debugPrint('Excepción al inicializar SpeechToText: $e');
       _isInitialized = false;
     }
 
@@ -39,17 +40,19 @@ class SpeechService {
   }) async {
     final hasSpeech = await initialize();
     if (!hasSpeech) {
-      print('El reconocimiento de voz no está disponible o no tiene permisos.');
+      debugPrint('El reconocimiento de voz no está disponible o no tiene permisos.');
       return;
     }
 
     await _speech.listen(
-      localeId: 'es_ES', // Configuramos el idioma por defecto a español
+      listenOptions: stt.SpeechListenOptions(
+        localeId: 'es_ES',
+        listenFor: const Duration(seconds: 15),
+        pauseFor: const Duration(seconds: 4),
+      ),
       onResult: (result) {
         onResult(result.recognizedWords);
       },
-      listenFor: const Duration(seconds: 15), // Tiempo máximo de escucha continua
-      pauseFor: const Duration(seconds: 4),   // Detenerse si el usuario hace una pausa larga
     );
 
     // Esperar a que deje de escuchar y disparar el callback de finalización

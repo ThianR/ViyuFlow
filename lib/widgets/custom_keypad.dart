@@ -203,9 +203,9 @@ class _CustomKeypadState extends State<CustomKeypad> {
     final isAction = ['AC', '⌫', 'OK'].contains(label);
 
     final bg = buttonColor ?? (isOperator 
-        ? AppColors.primary.withOpacity(0.2) 
+        ? AppColors.primary.withValues(alpha: 0.2) 
         : isAction 
-            ? (label == 'OK' ? AppColors.income.withOpacity(0.2) : Colors.red.withOpacity(0.1))
+            ? (label == 'OK' ? AppColors.income.withValues(alpha: 0.2) : Colors.red.withValues(alpha: 0.1))
             : defaultBg);
 
     final textCol = textColor ?? (isOperator 

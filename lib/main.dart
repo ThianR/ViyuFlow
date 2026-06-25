@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'theme.dart';
-import 'views/main_navigation.dart';
+import 'views/splash_screen.dart';
 
 void main() async {
   // Garantizar que la vinculación del framework de Flutter esté lista antes de inicializar servicios
@@ -26,8 +26,8 @@ class ViyuFlowApp extends StatelessWidget {
       // Aplicar nuestro tema oscuro premium configurado
       theme: buildThemeData(context),
       
-      // Pantalla de inicio con menú inferior y estructura principal
-      home: const MainNavigation(),
+      // Pantalla de inicio con logo
+      home: const SplashScreen(),
     );
   }
 }

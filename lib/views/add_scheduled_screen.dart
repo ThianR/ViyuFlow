@@ -198,7 +198,7 @@ class _AddScheduledScreenState extends State<AddScheduledScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         decoration: BoxDecoration(
-                          color: _type == 'expense' ? AppColors.expense.withOpacity(0.2) : Colors.transparent,
+                          color: _type == 'expense' ? AppColors.expense.withValues(alpha: 0.2) : Colors.transparent,
                           borderRadius: const BorderRadius.horizontal(left: Radius.circular(11)),
                         ),
                         child: Text(
@@ -218,7 +218,7 @@ class _AddScheduledScreenState extends State<AddScheduledScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         decoration: BoxDecoration(
-                          color: _type == 'income' ? AppColors.income.withOpacity(0.2) : Colors.transparent,
+                          color: _type == 'income' ? AppColors.income.withValues(alpha: 0.2) : Colors.transparent,
                           borderRadius: const BorderRadius.horizontal(right: Radius.circular(11)),
                         ),
                         child: Text(
@@ -282,7 +282,7 @@ class _AddScheduledScreenState extends State<AddScheduledScreen> {
 
             // Cuenta y Categoría
             DropdownButtonFormField<Account>(
-              value: _selectedAccount,
+              initialValue: _selectedAccount,
               dropdownColor: AppColors.cardBackground,
               decoration: const InputDecoration(labelText: 'Cuenta'),
               items: _accounts.map((a) => DropdownMenuItem(
@@ -293,7 +293,7 @@ class _AddScheduledScreenState extends State<AddScheduledScreen> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<Category>(
-              value: _selectedCategory,
+              initialValue: _selectedCategory,
               dropdownColor: AppColors.cardBackground,
               decoration: const InputDecoration(labelText: 'Categoría'),
               items: _categories.map((c) {
@@ -314,7 +314,7 @@ class _AddScheduledScreenState extends State<AddScheduledScreen> {
             if (_subcategories.isNotEmpty) ...[
               const SizedBox(height: 16),
               DropdownButtonFormField<Subcategory>(
-                value: _selectedSubcategory,
+                initialValue: _selectedSubcategory,
                 dropdownColor: AppColors.cardBackground,
                 decoration: const InputDecoration(labelText: 'Subcategoría (Opcional)'),
                 items: _subcategories.map((s) => DropdownMenuItem(
@@ -336,7 +336,7 @@ class _AddScheduledScreenState extends State<AddScheduledScreen> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              value: _frequency,
+              initialValue: _frequency,
               dropdownColor: AppColors.cardBackground,
               decoration: const InputDecoration(labelText: 'Frecuencia'),
               items: const [
@@ -355,7 +355,7 @@ class _AddScheduledScreenState extends State<AddScheduledScreen> {
               contentPadding: EdgeInsets.zero,
               title: const Text('Aplicar automáticamente', style: TextStyle(color: Colors.white)),
               subtitle: const Text('Si está activo, se cargará el movimiento solo al llegar la fecha', style: TextStyle(color: Colors.white54, fontSize: 12)),
-              activeColor: AppColors.primary,
+              activeThumbColor: AppColors.primary,
               value: _autoApply,
               onChanged: (val) => setState(() => _autoApply = val),
             ),

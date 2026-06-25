@@ -3,7 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../database/db_helper.dart';
 import '../theme.dart';
-import 'package:intl/intl.dart';
+
 
 /// Pestaña de Estadísticas y Análisis Financiero de ViyuFlow.
 /// Ofrece gráficos circulares de gastos y gráficos de barras comparativos mensuales.
@@ -78,7 +78,7 @@ class StatisticsTabState extends State<StatisticsTab> {
         _isLoading = false;
       });
     } catch (e) {
-      print('Error al recargar estadísticas: $e');
+      debugPrint('Error al recargar estadísticas: $e');
       setState(() => _isLoading = false);
     }
   }
@@ -140,9 +140,9 @@ class StatisticsTabState extends State<StatisticsTab> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.12),
+              color: AppColors.primary.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+              border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
             ),
             child: Column(
               children: [
@@ -233,7 +233,7 @@ class StatisticsTabState extends State<StatisticsTab> {
                   child: Row(
                     children: [
                       CircleAvatar(
-                        backgroundColor: Color(colorHex).withOpacity(0.12),
+                        backgroundColor: Color(colorHex).withValues(alpha: 0.12),
                         child: Icon(catIcon, color: Color(colorHex), size: 18),
                       ),
                       const SizedBox(width: 16),
@@ -341,7 +341,7 @@ class StatisticsTabState extends State<StatisticsTab> {
           backDrawRodData: BackgroundBarChartRodData(
             show: true,
             toY: 6000000,
-            color: Colors.white.withOpacity(0.03),
+            color: Colors.white.withValues(alpha: 0.03),
           ),
         ),
       ],
@@ -391,7 +391,7 @@ class StatisticsTabState extends State<StatisticsTab> {
           padding: const EdgeInsets.symmetric(vertical: 10),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: isSelected ? activeColor.withOpacity(0.15) : AppColors.cardBackground,
+            color: isSelected ? activeColor.withValues(alpha: 0.15) : AppColors.cardBackground,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: isSelected ? activeColor : Colors.grey.shade800,

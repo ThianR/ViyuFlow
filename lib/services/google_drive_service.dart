@@ -1,12 +1,12 @@
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'dart:convert';
-import 'dart:io';
+
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:http/http.dart' as http;
 import '../database/db_helper.dart';
 import '../models/account.dart';
-import '../models/category.dart';
-import '../models/subcategory.dart';
+
 import '../models/transaction.dart';
 
 /// Cliente HTTP personalizado que inyecta la cabecera de autenticación OAuth de Google
@@ -55,7 +55,7 @@ class GoogleDriveService {
       _currentUser = await _googleSignIn.signInSilently();
       return _currentUser != null;
     } catch (e) {
-      print('Error en inicio de sesión silencioso de Google: $e');
+      debugPrint('Error en inicio de sesión silencioso de Google: $e');
       return false;
     }
   }
@@ -66,7 +66,7 @@ class GoogleDriveService {
       _currentUser = await _googleSignIn.signIn();
       return _currentUser != null;
     } catch (e) {
-      print('Error al iniciar sesión con Google: $e');
+      debugPrint('Error al iniciar sesión con Google: $e');
       return false;
     }
   }
@@ -77,7 +77,7 @@ class GoogleDriveService {
       await _googleSignIn.signOut();
       _currentUser = null;
     } catch (e) {
-      print('Error al cerrar sesión de Google: $e');
+      debugPrint('Error al cerrar sesión de Google: $e');
     }
   }
 
@@ -93,7 +93,7 @@ class GoogleDriveService {
       final client = GoogleAuthClient(authHeaders);
       return drive.DriveApi(client);
     } catch (e) {
-      print('Error al inicializar el cliente de la API de Drive: $e');
+      debugPrint('Error al inicializar el cliente de la API de Drive: $e');
       return null;
     }
   }
@@ -107,7 +107,7 @@ class GoogleDriveService {
   Future<bool> uploadBackup() async {
     final driveApi = await _getDriveApi();
     if (driveApi == null) {
-      print('No se pudo subir el respaldo: El usuario no está autenticado.');
+      debugPrint('No se pudo subir el respaldo: El usuario no está autenticado.');
       return false;
     }
 
@@ -162,7 +162,7 @@ class GoogleDriveService {
           existingFileId,
           uploadMedia: media,
         );
-        print('Respaldo en Google Drive actualizado con éxito (ID: ${responseFile.id}).');
+        debugPrint('Respaldo en Google Drive actualizado con éxito (ID: ${responseFile.id}).');
       } else {
         // Crear un nuevo archivo en la carpeta appDataFolder
         fileMetadata.parents = ['appDataFolder'];
@@ -170,7 +170,7 @@ class GoogleDriveService {
           fileMetadata,
           uploadMedia: media,
         );
-        print('Nuevo respaldo en Google Drive creado con éxito (ID: ${responseFile.id}).');
+        debugPrint('Nuevo respaldo en Google Drive creado con éxito (ID: ${responseFile.id}).');
       }
 
       // 3. Marcar las transacciones locales como sincronizadas tras el éxito de subida
@@ -185,7 +185,7 @@ class GoogleDriveService {
 
       return responseFile.id != null;
     } catch (e) {
-      print('Excepción durante la subida del respaldo a Google Drive: $e');
+      debugPrint('Excepción durante la subida del respaldo a Google Drive: $e');
       return false;
     }
   }
@@ -198,7 +198,7 @@ class GoogleDriveService {
   Future<bool> restoreBackup() async {
     final driveApi = await _getDriveApi();
     if (driveApi == null) {
-      print('No se pudo restaurar: El usuario no está autenticado.');
+      debugPrint('No se pudo restaurar: El usuario no está autenticado.');
       return false;
     }
 
@@ -211,7 +211,7 @@ class GoogleDriveService {
       );
 
       if (fileList.files == null || fileList.files!.isEmpty) {
-        print('No se encontró ningún archivo de respaldo de ViyuFlow en Google Drive.');
+        debugPrint('No se encontró ningún archivo de respaldo de ViyuFlow en Google Drive.');
         return false;
       }
 
@@ -234,7 +234,7 @@ class GoogleDriveService {
 
       // Validar firma del archivo
       if (backupData['app'] != 'ViyuFlow') {
-        print('El archivo descargado no pertenece a esta aplicación.');
+        debugPrint('El archivo descargado no pertenece a esta aplicación.');
         return false;
       }
 
@@ -251,11 +251,11 @@ class GoogleDriveService {
 
       // 4. Escribir de forma atómica en SQLite
       await _dbHelper.restoreDatabaseBackup(accounts, transactions, categories, subcategories);
-      print('Base de datos restaurada con éxito desde Google Drive.');
+      debugPrint('Base de datos restaurada con éxito desde Google Drive.');
 
       return true;
     } catch (e) {
-      print('Excepción durante la descarga y restauración de respaldo desde Google Drive: $e');
+      debugPrint('Excepción durante la descarga y restauración de respaldo desde Google Drive: $e');
       return false;
     }
   }

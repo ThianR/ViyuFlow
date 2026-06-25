@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:share_plus/share_plus.dart';
 import '../services/google_drive_service.dart';
 import '../services/csv_service.dart';
 import '../database/db_helper.dart';
@@ -21,6 +24,9 @@ class MainNavigation extends StatefulWidget {
 }
 
 class _MainNavigationState extends State<MainNavigation> {
+  // ignore: constant_identifier_names
+  static const String DIRECTORIO_TEMP = "temp";
+
   int _currentIndex = 0;
   final GoogleDriveService _driveService = GoogleDriveService();
   final DBHelper _dbHelper = DBHelper();
@@ -52,7 +58,7 @@ class _MainNavigationState extends State<MainNavigation> {
   Future<void> _checkGoogleSignInSilently() async {
     final signedIn = await _driveService.trySilentSignIn();
     if (signedIn) {
-      print('Autenticado silenciosamente con la cuenta de Google: ${_driveService.currentUser?.email}');
+      debugPrint('Autenticado silenciosamente con la cuenta de Google: ${_driveService.currentUser?.email}');
       // Intentar respaldo automático diario al inicio
       _runAutomaticDailyBackup();
     }
@@ -123,9 +129,19 @@ class _MainNavigationState extends State<MainNavigation> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Ajustes y Respaldos',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+
+                  Row(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.asset('assets/images/app_icon.jpg', height: 40),
+                      ),
+                      const SizedBox(width: 16),
+                      const Text(
+                        'Ajustes y Respaldos',
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 24),
                   
@@ -256,24 +272,26 @@ class _MainNavigationState extends State<MainNavigation> {
                             final csvStr = _csvService.exportTransactionsToCSV(txs);
                             
                             // Copiar al portapapeles o guardar (en un caso real se usa share_plus o path_provider)
-                            // Por ahora simularemos la exportación y guardamos en un archivo de debug bajo temp/
-                            // si está en entorno de desarrollo.
+                            // Exportar usando el sistema de compartir nativo
                             try {
-                              final directory = Directory('temp');
+                              final baseDir = await getApplicationDocumentsDirectory();
+                              final directory = Directory('${baseDir.path}/$DIRECTORIO_TEMP');
                               if (!await directory.exists()) {
                                 await directory.create(recursive: true);
                               }
-                              final file = File('temp/DEBUG_export.csv');
+                              final file = File('${directory.path}/ViyuFlow_Export.csv');
                               await file.writeAsString(csvStr);
-                              print('Archivo CSV de diagnóstico guardado en: ${file.path}');
+                              
+                              Navigator.pop(context);
+                              // ignore: deprecated_member_use
+                              await Share.shareXFiles([XFile(file.path)], text: 'Exportación ViyuFlow');
                             } catch (e) {
-                              print('Error al guardar archivo temporal de diagnóstico: $e');
+                              debugPrint('Error al exportar: $e');
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Error al exportar: $e')),
+                              );
                             }
-
-                            Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Datos exportados a CSV en la carpeta temp/ del proyecto.')),
-                            );
                           },
                         ),
                       ),
@@ -284,11 +302,15 @@ class _MainNavigationState extends State<MainNavigation> {
                           label: const Text('Importar CSV'),
                           onPressed: () async {
                             // En una app real abriríamos el selector de archivos
-                            // Para simular la importación, cargaremos un conjunto simulado de transacciones
-                            // o leeremos el de debug si existe.
+                            // Importar seleccionando un archivo real
                             try {
-                              final file = File('temp/DEBUG_export.csv');
-                              if (await file.exists()) {
+                              final result = await FilePicker.pickFiles(
+                                type: FileType.custom,
+                                allowedExtensions: ['csv'],
+                              );
+
+                              if (result != null && result.files.single.path != null) {
+                                final file = File(result.files.single.path!);
                                 final csvData = await file.readAsString();
                                 final count = await _csvService.importTransactionsFromCSV(csvData);
                                 _reloadAllTabs();
@@ -297,17 +319,7 @@ class _MainNavigationState extends State<MainNavigation> {
                                   SnackBar(content: Text('Se importaron $count transacciones con éxito.')),
                                 );
                               } else {
-                                // CSV simulado por defecto para pruebas rápidas
-                                final String dummyCSV = 
-                                    'ID,Fecha,Tipo,Monto,Moneda,Cuenta,Categoría,Subcategoría,Descripción\n'
-                                    ',2026-06-23T12:00:00,Gasto,120000,₲,Efectivo Personal,Alimentación,Supermercado,Compras de prueba\n'
-                                    ',2026-06-23T14:30:00,Ingreso,2500000,₲,Cuenta Banco Itaú,Ingresos,Salario Mensual,Cobro Freelance\n';
-                                final count = await _csvService.importTransactionsFromCSV(dummyCSV);
-                                _reloadAllTabs();
-                                Navigator.pop(context);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Archivo temp/DEBUG_export.csv no encontrado. Se importaron $count transacciones simuladas por defecto.')),
-                                );
+                                // El usuario canceló la selección
                               }
                             } catch (e) {
                               Navigator.pop(context);
@@ -357,7 +369,14 @@ class _MainNavigationState extends State<MainNavigation> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ViyuFlow'),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset('assets/images/logo_transparent.png', height: 32),
+            const SizedBox(width: 12),
+            const Text('ViyuFlow'),
+          ],
+        ),
         leading: IconButton(
           icon: const Icon(Icons.settings),
           onPressed: _showSettingsBottomSheet,

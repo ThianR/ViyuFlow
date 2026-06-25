@@ -50,7 +50,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
   bool _isLoading = true;
   bool _showKeypad = true;
-  bool _isSaving = false;
+
   
   String? _budgetMessage;
 
@@ -133,7 +133,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      print('Error al cargar datos en formulario: $e');
+      debugPrint('Error al cargar datos en formulario: $e');
       setState(() {
         _isLoading = false;
       });
@@ -358,7 +358,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
                                 color: _transactionType == 'expense'
-                                    ? AppColors.expense.withOpacity(0.2)
+                                    ? AppColors.expense.withValues(alpha: 0.2)
                                     : Colors.transparent,
                                 border: Border.all(
                                   color: _transactionType == 'expense' ? AppColors.expense : Colors.grey.shade800,
@@ -386,7 +386,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
                                 color: _transactionType == 'income'
-                                    ? AppColors.income.withOpacity(0.2)
+                                    ? AppColors.income.withValues(alpha: 0.2)
                                     : Colors.transparent,
                                 border: Border.all(
                                   color: _transactionType == 'income' ? AppColors.income : Colors.grey.shade800,
@@ -520,7 +520,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                 children: [
                                   CircleAvatar(
                                     radius: 12,
-                                    backgroundColor: Color(colorVal).withOpacity(0.2),
+                                    backgroundColor: Color(colorVal).withValues(alpha: 0.2),
                                     child: Icon(
                                       _getIconData(cat.icon),
                                       size: 14,

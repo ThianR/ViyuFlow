@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../database/db_helper.dart';
+import '../models/account.dart';
 import '../models/budget.dart';
 import '../theme.dart';
 
@@ -20,8 +21,28 @@ class _AutoBudgetDialogState extends State<AutoBudgetDialog> {
   double _percent = 70.0;
   int _months = 3;
   String _currency = '₲';
+  String _budgetType = 'both';
   
+  Account? _selectedAccount;
+  List<Account> _accounts = [];
+  bool _isLoadingAccounts = true;
   bool _isGenerating = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAccounts();
+  }
+
+  Future<void> _loadAccounts() async {
+    final accounts = await _dbHelper.getAllAccounts();
+    if (mounted) {
+      setState(() {
+        _accounts = accounts;
+        _isLoadingAccounts = false;
+      });
+    }
+  }
 
   Future<void> _generate() async {
     if (!_formKey.currentState!.validate()) return;
@@ -36,44 +57,45 @@ class _AutoBudgetDialogState extends State<AutoBudgetDialog> {
 
     double totalBudgetPool = _income * (_percent / 100);
     
-    // Obtener promedios históricos de los últimos N meses
-    final averages = await _dbHelper.getHistoricalAverages(monthsBack: _months);
-    
-    if (averages.isEmpty) {
-      if(mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No hay datos históricos suficientes para autogenerar.')));
-        Navigator.pop(context);
+    if (_budgetType == 'both' || _budgetType == 'categories') {
+      // Obtener promedios históricos de los últimos N meses
+      final averages = await _dbHelper.getHistoricalAverages(monthsBack: _months);
+      
+      if (averages.isEmpty) {
+        if(mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No hay datos históricos suficientes para autogenerar por categorías.')));
+          setState(() => _isGenerating = false);
+        }
+        return;
       }
-      return;
+
+      double totalHistoricalAvg = 0;
+      averages.forEach((key, val) => totalHistoricalAvg += val);
+
+      for (var entry in averages.entries) {
+        int catId = entry.key;
+        double catAvg = entry.value;
+
+        double catBudget = (catAvg / totalHistoricalAvg) * totalBudgetPool;
+
+        final b = Budget(
+          amount: catBudget,
+          currency: _currency,
+          accountId: _selectedAccount?.id,
+          categoryId: catId,
+        );
+        await _dbHelper.insertBudget(b);
+      }
     }
 
-    double totalHistoricalAvg = 0;
-    averages.forEach((key, val) => totalHistoricalAvg += val);
-
-    // Si los históricos superan el límite de budgetPool, se escalan para abajo,
-    // o se asigna proporcionalmente. 
-    // Opción recomendada: distribuir el pool proporcionalmente.
-    for (var entry in averages.entries) {
-      int catId = entry.key;
-      double catAvg = entry.value;
-
-      double catBudget = (catAvg / totalHistoricalAvg) * totalBudgetPool;
-
-      // Crear presupuesto
-      final b = Budget(
-        amount: catBudget,
+    if (_budgetType == 'both' || _budgetType == 'global') {
+      final global = Budget(
+        amount: totalBudgetPool,
         currency: _currency,
-        categoryId: catId,
+        accountId: _selectedAccount?.id,
       );
-      await _dbHelper.insertBudget(b);
+      await _dbHelper.insertBudget(global);
     }
-
-    // Opcional: Crear presupuesto global con el monto total
-    final global = Budget(
-      amount: totalBudgetPool,
-      currency: _currency,
-    );
-    await _dbHelper.insertBudget(global);
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Presupuestos generados exitosamente')));
@@ -92,14 +114,26 @@ class _AutoBudgetDialogState extends State<AutoBudgetDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                'La app calculará un presupuesto global y por categorías basado en tus gastos de los últimos meses.',
+              const Text(
+                'La app calculará los presupuestos basados en tus ingresos esperados y gastos históricos.',
                 style: TextStyle(color: Colors.white70, fontSize: 13),
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 dropdownColor: AppColors.cardBackground,
-                value: _currency,
+                initialValue: _budgetType,
+                decoration: const InputDecoration(labelText: 'Tipo de Presupuesto'),
+                items: const [
+                  DropdownMenuItem(value: 'both', child: Text('Global y por Categorías', style: TextStyle(color: Colors.white))),
+                  DropdownMenuItem(value: 'global', child: Text('Solo Global', style: TextStyle(color: Colors.white))),
+                  DropdownMenuItem(value: 'categories', child: Text('Solo por Categorías', style: TextStyle(color: Colors.white))),
+                ],
+                onChanged: (v) => setState(() => _budgetType = v!), // trigger rebuild para ocultar Meses a analizar
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                dropdownColor: AppColors.cardBackground,
+                initialValue: _currency,
                 decoration: const InputDecoration(labelText: 'Moneda'),
                 items: const [
                   DropdownMenuItem(value: '₲', child: Text('Guaraníes (₲)', style: TextStyle(color: Colors.white))),
@@ -107,6 +141,26 @@ class _AutoBudgetDialogState extends State<AutoBudgetDialog> {
                 ],
                 onChanged: (v) => setState(() => _currency = v!),
               ),
+              const SizedBox(height: 16),
+              if (_isLoadingAccounts)
+                const Center(child: CircularProgressIndicator())
+              else
+                DropdownButtonFormField<Account?>(
+                  dropdownColor: AppColors.cardBackground,
+                  initialValue: _selectedAccount,
+                  decoration: const InputDecoration(labelText: 'Cuenta (Opcional)'),
+                  items: [
+                    const DropdownMenuItem<Account?>(
+                      value: null,
+                      child: Text('(General - Todas las cuentas)', style: TextStyle(color: Colors.white54)),
+                    ),
+                    ..._accounts.map((a) => DropdownMenuItem(
+                      value: a,
+                      child: Text(a.name, style: const TextStyle(color: Colors.white)),
+                    )),
+                  ],
+                  onChanged: (a) => setState(() => _selectedAccount = a),
+                ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _incomeCtrl,
@@ -152,19 +206,21 @@ class _AutoBudgetDialogState extends State<AutoBudgetDialog> {
                 activeColor: AppColors.primary,
                 onChanged: (v) => setState(() => _percent = v),
               ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<int>(
-                dropdownColor: AppColors.cardBackground,
-                value: _months,
-                decoration: const InputDecoration(labelText: 'Meses a analizar'),
-                items: [
-                  DropdownMenuItem(value: 1, child: Text('Último mes', style: TextStyle(color: Colors.white))),
-                  DropdownMenuItem(value: 3, child: Text('Últimos 3 meses', style: TextStyle(color: Colors.white))),
-                  DropdownMenuItem(value: 6, child: Text('Últimos 6 meses', style: TextStyle(color: Colors.white))),
-                  DropdownMenuItem(value: 12, child: Text('Último año', style: TextStyle(color: Colors.white))),
-                ],
-                onChanged: (v) => setState(() => _months = v!),
-              ),
+              if (_budgetType != 'global') ...[
+                const SizedBox(height: 16),
+                DropdownButtonFormField<int>(
+                  dropdownColor: AppColors.cardBackground,
+                  initialValue: _months,
+                  decoration: const InputDecoration(labelText: 'Meses a analizar'),
+                  items: const [
+                    DropdownMenuItem(value: 1, child: Text('Último mes', style: TextStyle(color: Colors.white))),
+                    DropdownMenuItem(value: 3, child: Text('Últimos 3 meses', style: TextStyle(color: Colors.white))),
+                    DropdownMenuItem(value: 6, child: Text('Últimos 6 meses', style: TextStyle(color: Colors.white))),
+                    DropdownMenuItem(value: 12, child: Text('Último año', style: TextStyle(color: Colors.white))),
+                  ],
+                  onChanged: (v) => setState(() => _months = v!),
+                ),
+              ],
             ],
           ),
         ),

@@ -101,7 +101,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.account_balance_wallet, size: 80, color: Colors.white.withOpacity(0.2)),
+                      Icon(Icons.account_balance_wallet, size: 80, color: Colors.white.withValues(alpha: 0.2)),
                       const SizedBox(height: 16),
                       const Text('No hay presupuestos activos', style: TextStyle(color: Colors.white54, fontSize: 16)),
                     ],
@@ -118,8 +118,11 @@ class _BudgetScreenState extends State<BudgetScreen> {
 
                     double pct = (spent / b.amount).clamp(0.0, 1.0);
                     Color barColor = AppColors.primary;
-                    if (pct >= 0.9) barColor = AppColors.expense;
-                    else if (pct >= 0.7) barColor = Colors.orange;
+                    if (pct >= 0.9) {
+                      barColor = AppColors.expense;
+                    } else if (pct >= 0.7) {
+                      barColor = Colors.orange;
+                    }
 
                     return Card(
                       color: AppColors.cardBackground,
@@ -136,8 +139,8 @@ class _BudgetScreenState extends State<BudgetScreen> {
                                 children: [
                                   CircleAvatar(
                                     backgroundColor: cat != null 
-                                      ? Color(int.parse(cat.color.replaceFirst('#', '0xFF'))).withOpacity(0.2)
-                                      : AppColors.primary.withOpacity(0.2),
+                                      ? Color(int.parse(cat.color.replaceFirst('#', '0xFF'))).withValues(alpha: 0.2)
+                                      : AppColors.primary.withValues(alpha: 0.2),
                                     child: Icon(
                                       cat != null ? IconData(int.parse(cat.icon), fontFamily: 'MaterialIcons') : Icons.public,
                                       color: cat != null 

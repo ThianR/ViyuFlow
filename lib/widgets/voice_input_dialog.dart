@@ -19,7 +19,7 @@ class _VoiceInputDialogState extends State<VoiceInputDialog> with SingleTickerPr
 
   String _transcribedText = 'Pulsa el micrófono y di tu gasto...';
   bool _isListening = false;
-  bool _hasError = false;
+
 
   late AnimationController _animationController;
   late Animation<double> _pulseAnimation;
@@ -54,7 +54,7 @@ class _VoiceInputDialogState extends State<VoiceInputDialog> with SingleTickerPr
   Future<void> _startListening() async {
     setState(() {
       _isListening = true;
-      _hasError = false;
+
       _transcribedText = 'Escuchando...';
     });
 
@@ -72,7 +72,7 @@ class _VoiceInputDialogState extends State<VoiceInputDialog> with SingleTickerPr
     } catch (e) {
       setState(() {
         _isListening = false;
-        _hasError = true;
+
         _transcribedText = 'Error al activar el micrófono.';
       });
     }

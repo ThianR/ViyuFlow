@@ -6,7 +6,6 @@ import '../theme.dart';
 import 'scheduled_screen.dart';
 import 'budget_screen.dart';
 import 'package:intl/intl.dart';
-import 'package:intl/intl.dart';
 
 /// Pestaña de Billetera que muestra el saldo general, la lista de cuentas
 /// y un gráfico de evolución temporal de los saldos.
@@ -54,7 +53,7 @@ class AccountsTabState extends State<AccountsTab> {
         _isLoading = false;
       });
     } catch (e) {
-      print('Error al recargar cuentas: $e');
+      debugPrint('Error al recargar balance: $e');
       setState(() => _isLoading = false);
     }
   }
@@ -147,7 +146,7 @@ class AccountsTabState extends State<AccountsTab> {
                     title: const Text('Cuenta Principal', style: TextStyle(color: Colors.white, fontSize: 14)),
                     subtitle: const Text('Será la predeterminada al registrar movimientos', style: TextStyle(color: Colors.white38, fontSize: 10)),
                     value: isDefault,
-                    activeColor: AppColors.primary,
+                    activeThumbColor: AppColors.primary,
                     onChanged: (val) {
                       setDialogState(() => isDefault = val);
                     },
@@ -304,7 +303,7 @@ class AccountsTabState extends State<AccountsTab> {
                     title: const Text('Cuenta Principal', style: TextStyle(color: Colors.white, fontSize: 14)),
                     subtitle: const Text('Será la predeterminada al registrar movimientos', style: TextStyle(color: Colors.white38, fontSize: 10)),
                     value: isDefault,
-                    activeColor: AppColors.primary,
+                    activeThumbColor: AppColors.primary,
                     onChanged: (val) {
                       setDialogState(() => isDefault = val);
                     },
@@ -435,7 +434,7 @@ class AccountsTabState extends State<AccountsTab> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppColors.income.withOpacity(0.2),
+                        color: AppColors.income.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -679,7 +678,7 @@ class AccountsTabState extends State<AccountsTab> {
                     ),
                     belowBarData: BarAreaData(
                       show: true,
-                      color: AppColors.primary.withOpacity(0.15),
+                      color: AppColors.primary.withValues(alpha: 0.12),
                     ),
                   ),
                 ],
@@ -694,6 +693,9 @@ class AccountsTabState extends State<AccountsTab> {
           if (_balances.isEmpty)
             const Text('No hay saldos registrados', style: TextStyle(color: Colors.white38)),
           ..._balances.entries.map((entry) {
+            final int colorVal = int.parse(
+              _accounts.firstWhere((a) => a.currency == entry.key, orElse: () => Account(name: '', currency: '', color: '0xFF0052D4')).color
+            );
             return Container(
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -708,7 +710,7 @@ class AccountsTabState extends State<AccountsTab> {
                     children: [
                       CircleAvatar(
                         radius: 16,
-                        backgroundColor: AppColors.primary.withOpacity(0.2),
+                        backgroundColor: Color(colorVal).withValues(alpha: 0.12),
                         child: Text(entry.key, style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
                       ),
                       const SizedBox(width: 12),
@@ -722,7 +724,7 @@ class AccountsTabState extends State<AccountsTab> {
                 ],
               ),
             );
-          }).toList(),
+          }),
 
           const SizedBox(height: 24),
 
@@ -787,7 +789,7 @@ class AccountsTabState extends State<AccountsTab> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: accentColor.withOpacity(0.2),
+                color: accentColor.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: accentColor, size: 24),
