@@ -533,6 +533,33 @@ class _MainNavigationState extends State<MainNavigation> {
                       },
                     ),
                   ),
+                  const SizedBox(height: 16),
+                  const Divider(color: Colors.white12),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton.icon(
+                      icon: const Icon(Icons.info_outline, color: AppColors.textSecondary),
+                      label: const Text('Acerca de ViyuFlow', style: TextStyle(color: AppColors.textSecondary)),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        showAboutDialog(
+                          context: context,
+                          applicationName: 'ViyuFlow',
+                          applicationVersion: '1.0.0',
+                          applicationIcon: Image.asset('assets/images/logo_transparent.png', height: 50),
+                          applicationLegalese: '© 2024 ViyuFlow.\nAplicación de finanzas personales enfocada en la privacidad.',
+                          children: [
+                            const SizedBox(height: 16),
+                            const Text(
+                              'ViyuFlow es un sistema "Offline-First". Tus datos financieros solo existen en este dispositivo a menos que decidas respaldarlos explícitamente en tu cuenta personal de Google Drive. No enviamos datos a servidores de terceros.',
+                              style: TextStyle(fontSize: 13),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
                 ],
               ),
             );
