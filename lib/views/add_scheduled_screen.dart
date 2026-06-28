@@ -155,6 +155,11 @@ class _AddScheduledScreenState extends State<AddScheduledScreen> {
     } else {
       await _dbHelper.updateScheduledTransaction(st);
     }
+    
+    if (_autoApply) {
+      await _dbHelper.processScheduledTransactions();
+    }
+    
     Navigator.pop(context, true);
   }
 

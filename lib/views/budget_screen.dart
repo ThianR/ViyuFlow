@@ -142,7 +142,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
                                       ? Color(int.parse(cat.color.replaceFirst('#', '0xFF'))).withValues(alpha: 0.2)
                                       : AppColors.primary.withValues(alpha: 0.2),
                                     child: Icon(
-                                      cat != null ? IconData(int.parse(cat.icon), fontFamily: 'MaterialIcons') : Icons.public,
+                                      cat != null ? _getIconData(cat.icon) : Icons.public,
                                       color: cat != null 
                                         ? Color(int.parse(cat.color.replaceFirst('#', '0xFF')))
                                         : AppColors.primary,
@@ -200,5 +200,43 @@ class _BudgetScreenState extends State<BudgetScreen> {
         child: const Icon(Icons.add),
       ),
     );
+  }
+
+  /// Retorna el icono del sistema Material Icons a partir del string guardado.
+  IconData _getIconData(String iconName) {
+    switch (iconName) {
+      case 'home': return Icons.home;
+      case 'restaurant': return Icons.restaurant;
+      case 'directions_car': return Icons.directions_car;
+      case 'medical_services': return Icons.medical_services;
+      case 'sports_esports': return Icons.sports_esports;
+      case 'school': return Icons.school;
+      case 'payments': return Icons.payments;
+      case 'account_balance_wallet': return Icons.account_balance_wallet;
+      case 'flight': return Icons.flight;
+      case 'local_grocery_store': return Icons.local_grocery_store;
+      case 'pets': return Icons.pets;
+      case 'fitness_center': return Icons.fitness_center;
+      case 'checkroom': return Icons.checkroom;
+      case 'local_gas_station': return Icons.local_gas_station;
+      case 'phone_iphone': return Icons.phone_iphone;
+      case 'theaters': return Icons.theaters;
+      case 'wifi': return Icons.wifi;
+      case 'water_drop': return Icons.water_drop;
+      case 'bolt': return Icons.bolt;
+      case 'tv': return Icons.tv;
+      case 'train': return Icons.train;
+      case 'pedal_bike': return Icons.pedal_bike;
+      case 'local_cafe': return Icons.local_cafe;
+      case 'fastfood': return Icons.fastfood;
+      case 'work': return Icons.work;
+      case 'laptop_mac': return Icons.laptop_mac;
+      case 'menu_book': return Icons.menu_book;
+      case 'savings': return Icons.savings;
+      case 'credit_card': return Icons.credit_card;
+      case 'shopping_bag':
+      default:
+        return Icons.shopping_bag;
+    }
   }
 }

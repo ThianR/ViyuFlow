@@ -47,6 +47,43 @@ class CSVService {
     return const ListToCsvConverter().convert(rows);
   }
 
+  /// Devuelve una cadena con el formato de plantilla CSV de ejemplo
+  String getCSVTemplate() {
+    List<List<dynamic>> rows = [
+      [
+        'Fecha',
+        'Tipo',
+        'Monto',
+        'Moneda',
+        'Cuenta',
+        'Categoría',
+        'Subcategoría',
+        'Descripción'
+      ],
+      [
+        '2023-10-25',
+        'Ingreso',
+        '5000000',
+        '₲',
+        'Banco Itau',
+        'Salario',
+        '',
+        'Pago correspondiente a octubre'
+      ],
+      [
+        '2023-10-26',
+        'Egreso',
+        '150000',
+        '₲',
+        'Efectivo',
+        'Alimentación',
+        'Supermercado',
+        'Compras de la semana'
+      ]
+    ];
+    return const ListToCsvConverter().convert(rows);
+  }
+
   /// Importa transacciones desde una cadena de texto en formato CSV.
   /// Lee el archivo fila por fila, resuelve o crea las cuentas/categorías necesarias
   /// e inserta las transacciones en la base de datos local SQLite.
@@ -76,8 +113,15 @@ class CSVService {
     if (idxDescription == -1) idxDescription = headers.indexOf('descripcion');
 
     // Validación básica de columnas requeridas
-    if (idxDate == -1 || idxType == -1 || idxAmount == -1 || idxAccount == -1 || idxCategory == -1) {
-      throw Exception('El archivo CSV no tiene el formato esperado. Faltan columnas obligatorias.');
+    List<String> missingColumns = [];
+    if (idxDate == -1) missingColumns.add('Fecha');
+    if (idxType == -1) missingColumns.add('Tipo');
+    if (idxAmount == -1) missingColumns.add('Monto');
+    if (idxAccount == -1) missingColumns.add('Cuenta');
+    if (idxCategory == -1) missingColumns.add('Categoría');
+
+    if (missingColumns.isNotEmpty) {
+      throw Exception('El archivo CSV no tiene el formato esperado. Faltan las siguientes columnas obligatorias: ${missingColumns.join(', ')}.');
     }
 
     // Obtener datos actuales de la DB para mapear/evitar duplicar búsquedas repetidas

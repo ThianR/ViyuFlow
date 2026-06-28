@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../database/db_helper.dart';
 import '../models/transaction.dart';
 import '../models/account.dart';
+import '../models/scheduled_transaction.dart';
 import '../theme.dart';
 import 'add_transaction_screen.dart';
 
@@ -20,6 +21,8 @@ class TransactionsTabState extends State<TransactionsTab> {
   
   List<TransactionModel> _allTransactions = [];
   List<TransactionModel> _transactions = [];
+  List<ScheduledTransaction> _allScheduled = [];
+  List<ScheduledTransaction> _scheduled = [];
   List<Account> _accounts = [];
   bool _isLoading = true;
   
@@ -59,6 +62,7 @@ class TransactionsTabState extends State<TransactionsTab> {
       final monthFilter = DateFormat('yyyy-MM').format(_activeMonth);
       _accounts = await _dbHelper.getAllAccounts();
       _allTransactions = await _dbHelper.getAllTransactions(monthFilter: monthFilter);
+      _allScheduled = await _dbHelper.getScheduledTransactions(onlyActive: true);
       
       // Auto-seleccionar cuenta default si no hay selección
       if (_selectedAccountId == null && _selectedConsolidatedCurrency == null && _accounts.isNotEmpty) {
@@ -86,10 +90,16 @@ class TransactionsTabState extends State<TransactionsTab> {
     setState(() {
       if (_selectedAccountId != null) {
         _transactions = _allTransactions.where((t) => t.accountId == _selectedAccountId).toList();
+        _scheduled = _allScheduled.where((st) => st.accountId == _selectedAccountId).toList();
       } else if (_selectedConsolidatedCurrency != null) {
         _transactions = _allTransactions.where((t) => t.accountCurrency == _selectedConsolidatedCurrency).toList();
+        _scheduled = _allScheduled.where((st) {
+          final acc = _accounts.firstWhere((a) => a.id == st.accountId, orElse: () => _accounts.first);
+          return acc.currency == _selectedConsolidatedCurrency;
+        }).toList();
       } else {
         _transactions = _allTransactions;
+        _scheduled = _allScheduled;
       }
       _isLoading = false;
     });
@@ -111,6 +121,25 @@ class TransactionsTabState extends State<TransactionsTab> {
     return {
       'income': totalIncome,
       'expense': totalExpense,
+    };
+  }
+
+  /// Calcula los montos pendientes consolidados a partir de las transacciones programadas
+  Map<String, double> _calculatePending() {
+    double pendingIncome = 0.0;
+    double pendingExpense = 0.0;
+    
+    for (var st in _scheduled) {
+      if (st.type == 'income') {
+        pendingIncome += st.amount;
+      } else {
+        pendingExpense += st.amount;
+      }
+    }
+    
+    return {
+      'income': pendingIncome,
+      'expense': pendingExpense,
     };
   }
 
@@ -170,6 +199,7 @@ class TransactionsTabState extends State<TransactionsTab> {
     }
 
     final totals = _calculateTotals();
+    final pendingTotals = _calculatePending();
     final groupedTxs = _groupTransactionsByDay();
     String currencySymbol = '₲';
     if (_selectedAccountId != null && _accounts.isNotEmpty) {
@@ -356,7 +386,7 @@ class TransactionsTabState extends State<TransactionsTab> {
                       const SizedBox(width: 6),
                       const Text('Ingresos pendientes:', style: TextStyle(color: Colors.grey, fontSize: 11)),
                       const SizedBox(width: 4),
-                      Text('0 $currencySymbol', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
+                      Text('${NumberFormat.decimalPattern('es_ES').format(pendingTotals['income']!)} $currencySymbol', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
                     ],
                   ),
                   Row(
@@ -365,8 +395,7 @@ class TransactionsTabState extends State<TransactionsTab> {
                       const SizedBox(width: 6),
                       const Text('Gastos pendientes:', style: TextStyle(color: Colors.grey, fontSize: 11)),
                       const SizedBox(width: 4),
-                      // Mock de un gasto pendiente
-                      Text('1,400,000 $currencySymbol', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
+                      Text('${NumberFormat.decimalPattern('es_ES').format(pendingTotals['expense']!)} $currencySymbol', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
                     ],
                   ),
                 ],
@@ -445,6 +474,23 @@ class TransactionsTabState extends State<TransactionsTab> {
                               color: AppColors.expense,
                               child: const Icon(Icons.delete, color: Colors.white),
                             ),
+                            confirmDismiss: (direction) async {
+                              return await showDialog<bool>(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  backgroundColor: AppColors.cardBackground,
+                                  title: const Text('¿Eliminar movimiento?', style: TextStyle(color: Colors.white)),
+                                  content: const Text('Esta transacción será eliminada permanentemente de tu registro local.'),
+                                  actions: [
+                                    TextButton(child: const Text('Cancelar'), onPressed: () => Navigator.pop(context, false)),
+                                    TextButton(
+                                      child: const Text('Eliminar', style: TextStyle(color: AppColors.expense)),
+                                      onPressed: () => Navigator.pop(context, true),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
                             onDismissed: (direction) {
                               _dbHelper.deleteTransaction(tx.id!);
                               _transactions.remove(tx);

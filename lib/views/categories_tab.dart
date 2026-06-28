@@ -110,6 +110,20 @@ class CategoriesTabState extends State<CategoriesTab> {
       {'name': 'menu_book', 'icon': Icons.menu_book},
       {'name': 'savings', 'icon': Icons.savings},
       {'name': 'credit_card', 'icon': Icons.credit_card},
+      {'name': 'account_balance', 'icon': Icons.account_balance},
+      {'name': 'child_care', 'icon': Icons.child_care},
+      {'name': 'health_and_safety', 'icon': Icons.health_and_safety},
+      {'name': 'directions_bus', 'icon': Icons.directions_bus},
+      {'name': 'build', 'icon': Icons.build},
+      {'name': 'card_giftcard', 'icon': Icons.card_giftcard},
+      {'name': 'beach_access', 'icon': Icons.beach_access},
+      {'name': 'park', 'icon': Icons.park},
+      {'name': 'smoking_rooms', 'icon': Icons.smoking_rooms},
+      {'name': 'local_bar', 'icon': Icons.local_bar},
+      {'name': 'music_note', 'icon': Icons.music_note},
+      {'name': 'stadium', 'icon': Icons.stadium},
+      {'name': 'chair', 'icon': Icons.chair},
+      {'name': 'celebration', 'icon': Icons.celebration},
     ];
 
     final List<String> colors = [
@@ -499,6 +513,20 @@ class CategoriesTabState extends State<CategoriesTab> {
       case 'menu_book': return Icons.menu_book;
       case 'savings': return Icons.savings;
       case 'credit_card': return Icons.credit_card;
+      case 'account_balance': return Icons.account_balance;
+      case 'child_care': return Icons.child_care;
+      case 'health_and_safety': return Icons.health_and_safety;
+      case 'directions_bus': return Icons.directions_bus;
+      case 'build': return Icons.build;
+      case 'card_giftcard': return Icons.card_giftcard;
+      case 'beach_access': return Icons.beach_access;
+      case 'park': return Icons.park;
+      case 'smoking_rooms': return Icons.smoking_rooms;
+      case 'local_bar': return Icons.local_bar;
+      case 'music_note': return Icons.music_note;
+      case 'stadium': return Icons.stadium;
+      case 'chair': return Icons.chair;
+      case 'celebration': return Icons.celebration;
       case 'shopping_bag':
       default:
         return Icons.shopping_bag;

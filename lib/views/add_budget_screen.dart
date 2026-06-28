@@ -6,6 +6,7 @@ import '../models/account.dart';
 import '../models/category.dart';
 import '../models/subcategory.dart';
 import '../theme.dart';
+import '../utils/currency_utils.dart';
 import 'auto_budget_dialog.dart';
 
 class AddBudgetScreen extends StatefulWidget {
@@ -154,11 +155,10 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
               children: [
                 DropdownButton<String>(
                   dropdownColor: AppColors.cardBackground,
-                  value: _currency,
-                  items: const [
-                    DropdownMenuItem(value: '₲', child: Text('₲', style: TextStyle(color: Colors.white))),
-                    DropdownMenuItem(value: 'U\$', child: Text('U\$', style: TextStyle(color: Colors.white))),
-                  ],
+                  value: CurrencyUtils.availableCurrencies.any((c) => c['symbol'] == _currency) ? _currency : '₲',
+                  items: CurrencyUtils.availableCurrencies.map((c) {
+                    return DropdownMenuItem(value: c['symbol'], child: Text(c['symbol']!, style: const TextStyle(color: Colors.white)));
+                  }).toList(),
                   onChanged: (v) => setState(() => _currency = v!),
                 ),
                 const SizedBox(width: 16),

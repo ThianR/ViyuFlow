@@ -4,6 +4,7 @@ import '../database/db_helper.dart';
 import '../models/account.dart';
 import '../models/budget.dart';
 import '../theme.dart';
+import '../utils/currency_utils.dart';
 
 class AutoBudgetDialog extends StatefulWidget {
   const AutoBudgetDialog({super.key});
@@ -135,10 +136,9 @@ class _AutoBudgetDialogState extends State<AutoBudgetDialog> {
                 dropdownColor: AppColors.cardBackground,
                 initialValue: _currency,
                 decoration: const InputDecoration(labelText: 'Moneda'),
-                items: const [
-                  DropdownMenuItem(value: '₲', child: Text('Guaraníes (₲)', style: TextStyle(color: Colors.white))),
-                  DropdownMenuItem(value: 'U\$', child: Text('Dólares (U\$)', style: TextStyle(color: Colors.white))),
-                ],
+                items: CurrencyUtils.availableCurrencies.map((c) {
+                  return DropdownMenuItem(value: c['symbol'], child: Text(c['name']!, style: const TextStyle(color: Colors.white)));
+                }).toList(),
                 onChanged: (v) => setState(() => _currency = v!),
               ),
               const SizedBox(height: 16),

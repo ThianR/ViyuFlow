@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../database/db_helper.dart';
 import '../models/account.dart';
 import '../theme.dart';
+import '../utils/currency_utils.dart';
 import 'scheduled_screen.dart';
 import 'budget_screen.dart';
 import 'package:intl/intl.dart';
@@ -11,8 +12,9 @@ import 'package:intl/intl.dart';
 /// y un gráfico de evolución temporal de los saldos.
 class AccountsTab extends StatefulWidget {
   final void Function(int accountId)? onAccountSelected;
+  final VoidCallback? onScheduleChanged;
 
-  const AccountsTab({super.key, this.onAccountSelected});
+  const AccountsTab({super.key, this.onAccountSelected, this.onScheduleChanged});
 
   @override
   State<AccountsTab> createState() => AccountsTabState();
@@ -98,11 +100,9 @@ class AccountsTabState extends State<AccountsTab> {
                       DropdownButton<String>(
                         dropdownColor: AppColors.cardBackground,
                         value: currency,
-                        items: const [
-                          DropdownMenuItem(value: '₲', child: Text('Guaraníes (₲)')),
-                          DropdownMenuItem(value: '\$', child: Text('Dólares (\$)')),
-                          DropdownMenuItem(value: '€', child: Text('Euros (€)')),
-                        ],
+                        items: CurrencyUtils.availableCurrencies.map((c) {
+                          return DropdownMenuItem(value: c['symbol'], child: Text(c['name']!));
+                        }).toList(),
                         onChanged: (val) {
                           if (val != null) {
                             setDialogState(() => currency = val);
@@ -254,12 +254,10 @@ class AccountsTabState extends State<AccountsTab> {
                       const Text('Moneda:', style: TextStyle(color: Colors.white)),
                       DropdownButton<String>(
                         dropdownColor: AppColors.cardBackground,
-                        value: ['₲', '\$', '€'].contains(currency) ? currency : '₲',
-                        items: const [
-                          DropdownMenuItem(value: '₲', child: Text('Guaraníes (₲)')),
-                          DropdownMenuItem(value: '\$', child: Text('Dólares (\$)')),
-                          DropdownMenuItem(value: '€', child: Text('Euros (€)')),
-                        ],
+                        value: CurrencyUtils.availableCurrencies.any((c) => c['symbol'] == currency) ? currency : '₲',
+                        items: CurrencyUtils.availableCurrencies.map((c) {
+                          return DropdownMenuItem(value: c['symbol'], child: Text(c['name']!));
+                        }).toList(),
                         onChanged: (val) {
                           if (val != null) {
                             setDialogState(() => currency = val);
@@ -747,7 +745,10 @@ class AccountsTabState extends State<AccountsTab> {
             () => Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const ScheduledScreen()),
-            ).then((_) => reloadAccounts()),
+            ).then((_) {
+              reloadAccounts();
+              widget.onScheduleChanged?.call();
+            }),
           ),
           const SizedBox(height: 12),
         ],

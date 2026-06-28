@@ -47,7 +47,9 @@ class DBHelper {
   Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
       // Agregar columna is_default a cuentas y establecer la cuenta id=1 como por defecto
-      await db.execute('ALTER TABLE accounts ADD COLUMN is_default INTEGER NOT NULL DEFAULT 0');
+      await db.execute(
+        'ALTER TABLE accounts ADD COLUMN is_default INTEGER NOT NULL DEFAULT 0',
+      );
       await db.execute('UPDATE accounts SET is_default = 1 WHERE id = 1');
     }
     if (oldVersion < 3) {
@@ -193,9 +195,27 @@ class DBHelper {
   Future _insertDefaultData(Database db) async {
     // Cuentas predeterminadas
     final List<Map<String, dynamic>> defaultAccounts = [
-      {'name': 'Efectivo Personal', 'currency': '₲', 'color': '0xFF38EF7D', 'is_active': 1, 'is_default': 1},
-      {'name': 'Cuenta Banco Itaú', 'currency': '₲', 'color': '0xFF0052D4', 'is_active': 1, 'is_default': 0},
-      {'name': 'Efectivo Dólares', 'currency': '\$', 'color': '0xFFFFA502', 'is_active': 1, 'is_default': 0},
+      {
+        'name': 'Efectivo Personal',
+        'currency': '₲',
+        'color': '0xFF38EF7D',
+        'is_active': 1,
+        'is_default': 1,
+      },
+      {
+        'name': 'Cuenta Banco',
+        'currency': '₲',
+        'color': '0xFF0052D4',
+        'is_active': 1,
+        'is_default': 0,
+      },
+      {
+        'name': 'Efectivo Dólares',
+        'currency': '\$',
+        'color': '0xFFFFA502',
+        'is_active': 1,
+        'is_default': 0,
+      },
     ];
 
     for (var acc in defaultAccounts) {
@@ -211,7 +231,13 @@ class DBHelper {
         'icon': 'home',
         'color': '0xFFFF5252',
         'type': 'expense',
-        'subcategories': ['Energía Eléctrica', 'Agua Corriente', 'Internet', 'Alquiler', 'Limpieza y Mantenimiento']
+        'subcategories': [
+          'Energía Eléctrica',
+          'Agua Corriente',
+          'Internet',
+          'Alquiler',
+          'Limpieza y Mantenimiento',
+        ],
       },
       {
         'id': 2,
@@ -219,7 +245,13 @@ class DBHelper {
         'icon': 'restaurant',
         'color': '0xFFFF9800',
         'type': 'expense',
-        'subcategories': ['Supermercado', 'Restaurantes', 'Delivery', 'Cafetería', 'Meriendas']
+        'subcategories': [
+          'Supermercado',
+          'Restaurantes',
+          'Delivery',
+          'Cafetería',
+          'Meriendas',
+        ],
       },
       {
         'id': 3,
@@ -227,7 +259,13 @@ class DBHelper {
         'icon': 'directions_car',
         'color': '0xFF29B6F6',
         'type': 'expense',
-        'subcategories': ['Combustible', 'Pasajes de bus', 'Uber/Bolt', 'Mantenimiento Vehicular', 'Peaje']
+        'subcategories': [
+          'Combustible',
+          'Pasajes de bus',
+          'Uber/Bolt',
+          'Mantenimiento Vehicular',
+          'Peaje',
+        ],
       },
       {
         'id': 4,
@@ -235,7 +273,13 @@ class DBHelper {
         'icon': 'medical_services',
         'color': '0xFFE040FB',
         'type': 'expense',
-        'subcategories': ['Farmacia y Medicamentos', 'Consulta Médica', 'Odontología', 'Gimnasio', 'Seguro Médico']
+        'subcategories': [
+          'Farmacia y Medicamentos',
+          'Consulta Médica',
+          'Odontología',
+          'Gimnasio',
+          'Seguro Médico',
+        ],
       },
       {
         'id': 5,
@@ -243,7 +287,13 @@ class DBHelper {
         'icon': 'sports_esports',
         'color': '0xFF4CAF50',
         'type': 'expense',
-        'subcategories': ['Cine y Streaming', 'Salidas y Fiestas', 'Suscripciones', 'Viajes', 'Hobbies']
+        'subcategories': [
+          'Cine y Streaming',
+          'Salidas y Fiestas',
+          'Suscripciones',
+          'Viajes',
+          'Hobbies',
+        ],
       },
       {
         'id': 6,
@@ -251,7 +301,12 @@ class DBHelper {
         'icon': 'school',
         'color': '0xFF673AB7',
         'type': 'expense',
-        'subcategories': ['Cuota Universidad/Colegio', 'Libros y Materiales', 'Cursos Online', 'Idiomas']
+        'subcategories': [
+          'Cuota Universidad/Colegio',
+          'Libros y Materiales',
+          'Cursos Online',
+          'Idiomas',
+        ],
       },
       // Ingresos
       {
@@ -260,7 +315,13 @@ class DBHelper {
         'icon': 'payments',
         'color': '0xFF00E676',
         'type': 'income',
-        'subcategories': ['Salario Mensual', 'Honorarios Profesionales', 'Ventas', 'Rendimientos/Intereses', 'Regalos']
+        'subcategories': [
+          'Salario Mensual',
+          'Honorarios Profesionales',
+          'Ventas',
+          'Rendimientos/Intereses',
+          'Regalos',
+        ],
       },
       {
         'id': 8,
@@ -268,13 +329,13 @@ class DBHelper {
         'icon': 'account_balance_wallet',
         'color': '0xFF00B0FF',
         'type': 'income',
-        'subcategories': ['Aguinaldo', 'Reembolsos', 'Premios', 'Otros']
-      }
+        'subcategories': ['Aguinaldo', 'Reembolsos', 'Premios', 'Otros'],
+      },
     ];
 
     for (var cat in defaultCategories) {
       final categoryId = cat['id'] as int;
-      
+
       // Insertar Categoría
       await db.insert('categories', {
         'id': categoryId,
@@ -313,7 +374,11 @@ class DBHelper {
 
   Future<List<Account>> getAllAccounts() async {
     final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query('accounts', where: 'is_active = 1', orderBy: 'is_default DESC, id ASC');
+    final List<Map<String, dynamic>> maps = await db.query(
+      'accounts',
+      where: 'is_active = 1',
+      orderBy: 'is_default DESC, id ASC',
+    );
     return List.generate(maps.length, (i) => Account.fromMap(maps[i]));
   }
 
@@ -410,9 +475,11 @@ class DBHelper {
 
   /// Obtiene todas las transacciones ordenadas de forma cronológica descendente.
   /// Incluye Joins con cuentas y categorías para facilitar su uso en la UI.
-  Future<List<TransactionModel>> getAllTransactions({String? monthFilter}) async {
+  Future<List<TransactionModel>> getAllTransactions({
+    String? monthFilter,
+  }) async {
     final db = await database;
-    
+
     String query = '''
       SELECT t.*, 
              a.name as account_name, a.currency as account_currency,
@@ -472,8 +539,12 @@ class DBHelper {
     final scheduled = await getScheduledTransactions(onlyActive: true);
 
     for (var st in scheduled) {
-      final nextDate = DateTime(st.nextDate.year, st.nextDate.month, st.nextDate.day);
-      
+      final nextDate = DateTime(
+        st.nextDate.year,
+        st.nextDate.month,
+        st.nextDate.day,
+      );
+
       if (nextDate.isBefore(today) || nextDate.isAtSameMomentAs(today)) {
         if (st.autoApply) {
           await applyScheduledTransaction(st, db);
@@ -483,7 +554,10 @@ class DBHelper {
   }
 
   /// Aplica una transacción programada manualmente o automáticamente.
-  Future<void> applyScheduledTransaction(ScheduledTransaction st, [Database? dbInstance]) async {
+  Future<void> applyScheduledTransaction(
+    ScheduledTransaction st, [
+    Database? dbInstance,
+  ]) async {
     final db = dbInstance ?? await database;
 
     // 1. Insertar transacción real
@@ -508,10 +582,18 @@ class DBHelper {
         newDate = st.nextDate.add(const Duration(days: 7));
         break;
       case 'monthly':
-        newDate = DateTime(st.nextDate.year, st.nextDate.month + 1, st.nextDate.day);
+        newDate = DateTime(
+          st.nextDate.year,
+          st.nextDate.month + 1,
+          st.nextDate.day,
+        );
         break;
       case 'yearly':
-        newDate = DateTime(st.nextDate.year + 1, st.nextDate.month, st.nextDate.day);
+        newDate = DateTime(
+          st.nextDate.year + 1,
+          st.nextDate.month,
+          st.nextDate.day,
+        );
         break;
       case 'once':
       default:
@@ -522,7 +604,9 @@ class DBHelper {
     int newInstallment = st.currentInstallment + 1;
     bool isActive = true;
 
-    if (st.frequency == 'once' || (st.totalInstallments != null && newInstallment > st.totalInstallments!)) {
+    if (st.frequency == 'once' ||
+        (st.totalInstallments != null &&
+            newInstallment > st.totalInstallments!)) {
       isActive = false;
     }
 
@@ -557,7 +641,7 @@ class DBHelper {
   /// Obtiene el saldo disponible en cada cuenta, agrupando por moneda.
   Future<Map<String, double>> getBalancesByCurrency() async {
     final db = await database;
-    
+
     // Consultamos la suma de ingresos y egresos por cuenta
     final List<Map<String, dynamic>> maps = await db.rawQuery('''
       SELECT a.currency, t.type, SUM(t.amount) as total
@@ -585,7 +669,7 @@ class DBHelper {
   /// Obtiene el saldo disponible por cada cuenta individual.
   Future<Map<int, double>> getBalancesByAccountId() async {
     final db = await database;
-    
+
     final List<Map<String, dynamic>> maps = await db.rawQuery('''
       SELECT t.account_id, t.type, SUM(t.amount) as total
       FROM transactions t
@@ -609,16 +693,21 @@ class DBHelper {
   }
 
   /// Obtiene los ingresos y egresos acumulados de un mes específico agrupados por moneda.
-  Future<Map<String, Map<String, double>>> getMonthlySummary(String monthFilter) async {
+  Future<Map<String, Map<String, double>>> getMonthlySummary(
+    String monthFilter,
+  ) async {
     final db = await database;
-    
-    final List<Map<String, dynamic>> maps = await db.rawQuery('''
+
+    final List<Map<String, dynamic>> maps = await db.rawQuery(
+      '''
       SELECT a.currency, t.type, SUM(t.amount) as total
       FROM transactions t
       INNER JOIN accounts a ON t.account_id = a.id
       WHERE t.date LIKE ?
       GROUP BY a.currency, t.type
-    ''', ['$monthFilter%']);
+    ''',
+      ['$monthFilter%'],
+    );
 
     // Estructura: { "₲": { "income": 8000000, "expense": 5101000 }, "$": { ... } }
     Map<String, Map<String, double>> summary = {};
@@ -636,10 +725,14 @@ class DBHelper {
   }
 
   /// Obtiene los gastos del mes específico, agrupados por categoría y moneda, para gráficos.
-  Future<List<Map<String, dynamic>>> getExpenseDistributionByCategory(String monthFilter, String currency) async {
+  Future<List<Map<String, dynamic>>> getExpenseDistributionByCategory(
+    String monthFilter,
+    String currency,
+  ) async {
     final db = await database;
 
-    return await db.rawQuery('''
+    return await db.rawQuery(
+      '''
       SELECT c.name as category_name, c.color as category_color, c.icon as category_icon,
              SUM(t.amount) as total, COUNT(t.id) as transaction_count
       FROM transactions t
@@ -648,21 +741,29 @@ class DBHelper {
       WHERE t.date LIKE ? AND a.currency = ? AND t.type = 'expense'
       GROUP BY c.id
       ORDER BY total DESC
-    ''', ['$monthFilter%', currency]);
+    ''',
+      ['$monthFilter%', currency],
+    );
   }
 
   /// Obtiene la evolución diaria de ingresos/gastos en el mes actual para un gráfico de línea.
-  Future<List<Map<String, dynamic>>> getDailyTransactionEvolution(String monthFilter, String currency) async {
+  Future<List<Map<String, dynamic>>> getDailyTransactionEvolution(
+    String monthFilter,
+    String currency,
+  ) async {
     final db = await database;
 
-    return await db.rawQuery('''
+    return await db.rawQuery(
+      '''
       SELECT SUBSTR(t.date, 9, 2) as day, t.type, SUM(t.amount) as total
       FROM transactions t
       INNER JOIN accounts a ON t.account_id = a.id
       WHERE t.date LIKE ? AND a.currency = ?
       GROUP BY day, t.type
       ORDER BY day ASC
-    ''', ['$monthFilter%', currency]);
+    ''',
+      ['$monthFilter%', currency],
+    );
   }
 
   // ==========================================
@@ -672,7 +773,7 @@ class DBHelper {
   /// Obtiene todas las transacciones que no han sido sincronizadas aún con Google Drive.
   Future<List<TransactionModel>> getUnsyncedTransactions() async {
     final db = await database;
-    
+
     final List<Map<String, dynamic>> maps = await db.rawQuery('''
       SELECT t.*, 
              a.name as account_name, a.currency as account_currency,
@@ -684,7 +785,7 @@ class DBHelper {
       LEFT JOIN subcategories s ON t.subcategory_id = s.id
       WHERE t.sync_status = 0
     ''');
-    
+
     return List.generate(maps.length, (i) => TransactionModel.fromMap(maps[i]));
   }
 
@@ -693,15 +794,12 @@ class DBHelper {
     if (ids.isEmpty) return;
     final db = await database;
     final batch = db.batch();
-    
+
     final nowIso = DateTime.now().toIso8601String();
     for (var id in ids) {
       batch.update(
         'transactions',
-        {
-          'sync_status': 1,
-          'sync_date': nowIso,
-        },
+        {'sync_status': 1, 'sync_date': nowIso},
         where: 'id = ?',
         whereArgs: [id],
       );
@@ -756,7 +854,9 @@ class DBHelper {
   // OPERACIONES DE AGENDA DE MOVIMIENTOS
   // ==========================================
 
-  Future<List<ScheduledTransaction>> getScheduledTransactions({bool onlyActive = true}) async {
+  Future<List<ScheduledTransaction>> getScheduledTransactions({
+    bool onlyActive = true,
+  }) async {
     final db = await database;
     final where = onlyActive ? 'is_active = 1' : null;
     final List<Map<String, dynamic>> maps = await db.query(
@@ -817,18 +917,15 @@ class DBHelper {
 
   Future<int> deleteBudget(int id) async {
     final db = await database;
-    return await db.delete(
-      'budgets',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    return await db.delete('budgets', where: 'id = ?', whereArgs: [id]);
   }
 
   /// Calcula lo gastado en el mes actual para un presupuesto dado.
   Future<double> calculateSpentForBudget(Budget budget, DateTime month) async {
     final db = await database;
-    String startDate = "${month.year}-${month.month.toString().padLeft(2, '0')}-01";
-    
+    String startDate =
+        "${month.year}-${month.month.toString().padLeft(2, '0')}-01";
+
     // Cálculo simplificado del fin de mes
     int nextMonth = month.month + 1;
     int nextYear = month.year;
@@ -872,10 +969,11 @@ class DBHelper {
   /// Devuelve el promedio de gastos por categoría en los últimos N meses (por defecto 3).
   Future<Map<int, double>> getHistoricalAverages({int monthsBack = 3}) async {
     final db = await database;
-    
+
     DateTime now = DateTime.now();
     DateTime pastDate = DateTime(now.year, now.month - monthsBack, 1);
-    String pastDateStr = "${pastDate.year}-${pastDate.month.toString().padLeft(2, '0')}-01";
+    String pastDateStr =
+        "${pastDate.year}-${pastDate.month.toString().padLeft(2, '0')}-01";
 
     String query = '''
       SELECT category_id, SUM(amount) as total

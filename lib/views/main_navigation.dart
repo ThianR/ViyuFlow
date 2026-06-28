@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:share_plus/share_plus.dart';
 import '../services/google_drive_service.dart';
 import '../services/csv_service.dart';
+import '../services/excel_service.dart';
 import '../database/db_helper.dart';
 import '../theme.dart';
 import '../widgets/voice_input_dialog.dart';
@@ -31,6 +32,7 @@ class _MainNavigationState extends State<MainNavigation> {
   final GoogleDriveService _driveService = GoogleDriveService();
   final DBHelper _dbHelper = DBHelper();
   final CSVService _csvService = CSVService();
+  final ExcelService _excelService = ExcelService();
 
   // Claves globales para forzar recargas en las pestañas al hacer cambios
   final GlobalKey<AccountsTabState> _accountsKey = GlobalKey();
@@ -58,7 +60,9 @@ class _MainNavigationState extends State<MainNavigation> {
   Future<void> _checkGoogleSignInSilently() async {
     final signedIn = await _driveService.trySilentSignIn();
     if (signedIn) {
-      debugPrint('Autenticado silenciosamente con la cuenta de Google: ${_driveService.currentUser?.email}');
+      debugPrint(
+        'Autenticado silenciosamente con la cuenta de Google: ${_driveService.currentUser?.email}',
+      );
       // Intentar respaldo automático diario al inicio
       _runAutomaticDailyBackup();
     }
@@ -81,7 +85,8 @@ class _MainNavigationState extends State<MainNavigation> {
 
   /// Abre la pantalla flotante para añadir una transacción de forma manual.
   Future<void> _navigateToAddTransaction() async {
-    final int? currentSelectedAccountId = _transactionsKey.currentState?.selectedAccountId;
+    final int? currentSelectedAccountId =
+        _transactionsKey.currentState?.selectedAccountId;
 
     final bool? result = await Navigator.push<bool>(
       context,
@@ -129,36 +134,54 @@ class _MainNavigationState extends State<MainNavigation> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
                   Row(
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: Image.asset('assets/images/app_icon.jpg', height: 40),
+                        child: Image.asset(
+                          'assets/images/app_icon.jpg',
+                          height: 40,
+                        ),
                       ),
                       const SizedBox(width: 16),
                       const Text(
                         'Ajustes y Respaldos',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 24),
-                  
+
                   // Sección Google Drive
                   const Text(
                     'Sincronización con Google',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   _driveService.isSignedIn
                       ? ListTile(
                           contentPadding: EdgeInsets.zero,
-                          leading: const Icon(Icons.cloud_done, color: AppColors.income),
-                          title: Text(_driveService.currentUser?.email ?? 'Conectado'),
+                          leading: const Icon(
+                            Icons.cloud_done,
+                            color: AppColors.income,
+                          ),
+                          title: Text(
+                            _driveService.currentUser?.email ?? 'Conectado',
+                          ),
                           subtitle: const Text('Respaldo automático activado'),
                           trailing: TextButton(
-                            child: const Text('Desconectar', style: TextStyle(color: AppColors.expense)),
+                            child: const Text(
+                              'Desconectar',
+                              style: TextStyle(color: AppColors.expense),
+                            ),
                             onPressed: () async {
                               await _driveService.signOut();
                               setModalState(() {});
@@ -168,7 +191,10 @@ class _MainNavigationState extends State<MainNavigation> {
                         )
                       : ListTile(
                           contentPadding: EdgeInsets.zero,
-                          leading: const Icon(Icons.cloud_off, color: Colors.grey),
+                          leading: const Icon(
+                            Icons.cloud_off,
+                            color: Colors.grey,
+                          ),
                           title: const Text('Cuenta de Google'),
                           subtitle: const Text('Respaldos desactivados'),
                           trailing: ElevatedButton(
@@ -179,32 +205,51 @@ class _MainNavigationState extends State<MainNavigation> {
                                 setModalState(() {});
                                 setState(() {});
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Conectado con éxito a Google Drive')),
+                                  const SnackBar(
+                                    content: Text(
+                                      'Conectado con éxito a Google Drive',
+                                    ),
+                                  ),
                                 );
                               }
                             },
                           ),
                         ),
-                  
+
                   if (_driveService.isSignedIn) ...[
                     Row(
                       children: [
                         Expanded(
                           child: ElevatedButton.icon(
-                            icon: _isSyncing 
-                                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                            icon: _isSyncing
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
                                 : const Icon(Icons.backup, size: 16),
                             label: const Text('Respaldar Ahora'),
-                            onPressed: _isSyncing ? null : () async {
-                              setModalState(() => _isSyncing = true);
-                              final success = await _driveService.uploadBackup();
-                              setModalState(() => _isSyncing = false);
-                              if (success) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Respaldo en Google Drive completado.')),
-                                );
-                              }
-                            },
+                            onPressed: _isSyncing
+                                ? null
+                                : () async {
+                                    setModalState(() => _isSyncing = true);
+                                    final success = await _driveService
+                                        .uploadBackup();
+                                    setModalState(() => _isSyncing = false);
+                                    if (success) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Respaldo en Google Drive completado.',
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  },
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -217,12 +262,24 @@ class _MainNavigationState extends State<MainNavigation> {
                                 context: context,
                                 builder: (context) => AlertDialog(
                                   title: const Text('¿Restaurar datos?'),
-                                  content: const Text('Esto reemplazará todos tus datos locales actuales con la copia de Google Drive. Esta acción no se puede deshacer.'),
+                                  content: const Text(
+                                    'Esto reemplazará todos tus datos locales actuales con la copia de Google Drive. Esta acción no se puede deshacer.',
+                                  ),
                                   actions: [
-                                    TextButton(child: const Text('Cancelar'), onPressed: () => Navigator.pop(context, false)),
                                     TextButton(
-                                      child: const Text('Restaurar', style: TextStyle(color: AppColors.expense)),
-                                      onPressed: () => Navigator.pop(context, true),
+                                      child: const Text('Cancelar'),
+                                      onPressed: () =>
+                                          Navigator.pop(context, false),
+                                    ),
+                                    TextButton(
+                                      child: const Text(
+                                        'Restaurar',
+                                        style: TextStyle(
+                                          color: AppColors.expense,
+                                        ),
+                                      ),
+                                      onPressed: () =>
+                                          Navigator.pop(context, true),
                                     ),
                                   ],
                                 ),
@@ -231,16 +288,25 @@ class _MainNavigationState extends State<MainNavigation> {
                               if (confirm == true) {
                                 Navigator.pop(context); // Cerrar bottom sheet
                                 setState(() => _isLoadingNavigation = true);
-                                final success = await _driveService.restoreBackup();
+                                final success = await _driveService
+                                    .restoreBackup();
                                 setState(() => _isLoadingNavigation = false);
                                 if (success) {
                                   _reloadAllTabs();
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Datos restaurados con éxito.')),
+                                    const SnackBar(
+                                      content: Text(
+                                        'Datos restaurados con éxito.',
+                                      ),
+                                    ),
                                   );
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('No se pudo restaurar el respaldo.')),
+                                    const SnackBar(
+                                      content: Text(
+                                        'No se pudo restaurar el respaldo.',
+                                      ),
+                                    ),
                                   );
                                 }
                               }
@@ -254,11 +320,15 @@ class _MainNavigationState extends State<MainNavigation> {
 
                   const Divider(color: Colors.white12),
                   const SizedBox(height: 12),
-                  
+
                   // Sección CSV Local
                   const Text(
                     'Datos Locales (CSV)',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   Row(
@@ -269,27 +339,39 @@ class _MainNavigationState extends State<MainNavigation> {
                           label: const Text('Exportar CSV'),
                           onPressed: () async {
                             final txs = await _dbHelper.getAllTransactions();
-                            final csvStr = _csvService.exportTransactionsToCSV(txs);
-                            
-                            // Copiar al portapapeles o guardar (en un caso real se usa share_plus o path_provider)
-                            // Exportar usando el sistema de compartir nativo
                             try {
-                              final baseDir = await getApplicationDocumentsDirectory();
-                              final directory = Directory('${baseDir.path}/$DIRECTORIO_TEMP');
-                              if (!await directory.exists()) {
-                                await directory.create(recursive: true);
+                              final csvStr = _csvService
+                                  .exportTransactionsToCSV(txs);
+                              String? selectedDirectory =
+                                  await FilePicker.getDirectoryPath(
+                                    dialogTitle:
+                                        'Selecciona dónde guardar el CSV',
+                                  );
+
+                              if (selectedDirectory != null) {
+                                final file = File(
+                                  '$selectedDirectory/Exportacion_ViyuFlow.csv',
+                                );
+                                await file.writeAsString(csvStr);
+
+                                if (!mounted) return;
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'CSV guardado en: ${file.path}',
+                                    ),
+                                  ),
+                                );
                               }
-                              final file = File('${directory.path}/ViyuFlow_Export.csv');
-                              await file.writeAsString(csvStr);
-                              
-                              Navigator.pop(context);
-                              // ignore: deprecated_member_use
-                              await Share.shareXFiles([XFile(file.path)], text: 'Exportación ViyuFlow');
                             } catch (e) {
-                              debugPrint('Error al exportar: $e');
+                              debugPrint('Error al guardar CSV: $e');
+                              if (!mounted) return;
                               Navigator.pop(context);
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Error al exportar: $e')),
+                                SnackBar(
+                                  content: Text('Error al exportar: $e'),
+                                ),
                               );
                             }
                           },
@@ -309,14 +391,20 @@ class _MainNavigationState extends State<MainNavigation> {
                                 allowedExtensions: ['csv'],
                               );
 
-                              if (result != null && result.files.single.path != null) {
+                              if (result != null &&
+                                  result.files.single.path != null) {
                                 final file = File(result.files.single.path!);
                                 final csvData = await file.readAsString();
-                                final count = await _csvService.importTransactionsFromCSV(csvData);
+                                final count = await _csvService
+                                    .importTransactionsFromCSV(csvData);
                                 _reloadAllTabs();
                                 Navigator.pop(context);
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Se importaron $count transacciones con éxito.')),
+                                  SnackBar(
+                                    content: Text(
+                                      'Se importaron $count transacciones con éxito.',
+                                    ),
+                                  ),
                                 );
                               } else {
                                 // El usuario canceló la selección
@@ -324,13 +412,126 @@ class _MainNavigationState extends State<MainNavigation> {
                             } catch (e) {
                               Navigator.pop(context);
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Error al importar CSV: $e')),
+                                SnackBar(
+                                  content: Text(
+                                    'Error: ${e.toString().replaceAll('Exception: ', '')}',
+                                  ),
+                                  backgroundColor: AppColors.expense,
+                                ),
                               );
                             }
                           },
                         ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.file_download, size: 16),
+                      label: const Text(
+                        'Descargar Plantilla de importacion CSV',
+                      ),
+                      onPressed: () async {
+                        try {
+                          final csvStr = _csvService.getCSVTemplate();
+                          String? selectedDirectory =
+                              await FilePicker.getDirectoryPath(
+                                dialogTitle:
+                                    'Selecciona dónde guardar la plantilla',
+                              );
+
+                          if (selectedDirectory != null) {
+                            final file = File(
+                              '$selectedDirectory/Plantilla_Importacion_ViyuFlow.csv',
+                            );
+                            await file.writeAsString(csvStr);
+
+                            if (!mounted) return;
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Plantilla guardada en: ${file.path}',
+                                ),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          debugPrint('Error al guardar plantilla CSV: $e');
+                          if (!mounted) return;
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Error al descargar plantilla: $e'),
+                              backgroundColor: AppColors.expense,
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Divider(color: Colors.white12),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Reporte Completo',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(
+                          0xFF107C41,
+                        ), // Color verde Excel
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      icon: const Icon(Icons.table_chart, size: 20),
+                      label: const Text('Exportar Reporte Completo (Excel)'),
+                      onPressed: () async {
+                        try {
+                          final bytes = await _excelService
+                              .generateFullReport();
+                          String? selectedDirectory =
+                              await FilePicker.getDirectoryPath(
+                                dialogTitle:
+                                    'Selecciona dónde guardar el Excel',
+                              );
+
+                          if (selectedDirectory != null) {
+                            final file = File(
+                              '$selectedDirectory/ReporteCompleto_ViyuFlow.xlsx',
+                            );
+                            await file.writeAsBytes(bytes);
+
+                            if (!mounted) return;
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Excel guardado en: ${file.path}',
+                                ),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          debugPrint('Error al exportar a Excel: $e');
+                          if (!mounted) return;
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error al exportar: $e')),
+                          );
+                        }
+                      },
+                    ),
                   ),
                 ],
               ),
@@ -346,9 +547,7 @@ class _MainNavigationState extends State<MainNavigation> {
   @override
   Widget build(BuildContext context) {
     if (_isLoadingNavigation) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     // Lista de vistas (Tabs)
@@ -361,6 +560,7 @@ class _MainNavigationState extends State<MainNavigation> {
             _currentIndex = 1;
           });
         },
+        onScheduleChanged: _reloadAllTabs,
       ),
       TransactionsTab(key: _transactionsKey),
       StatisticsTab(key: _statisticsKey),
@@ -387,14 +587,11 @@ class _MainNavigationState extends State<MainNavigation> {
             const Padding(
               padding: EdgeInsets.only(right: 16.0),
               child: Icon(Icons.cloud_done, color: AppColors.income, size: 20),
-            )
+            ),
         ],
       ),
-      body: IndexedStack(
-        index: _currentIndex,
-        children: tabs,
-      ),
-      
+      body: IndexedStack(index: _currentIndex, children: tabs),
+
       // Botones flotantes
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
@@ -405,7 +602,7 @@ class _MainNavigationState extends State<MainNavigation> {
         onPressed: _navigateToAddTransaction,
         child: const Icon(Icons.add, size: 28, color: Colors.white),
       ),
-      
+
       // Barra de navegación inferior
       bottomNavigationBar: BottomAppBar(
         color: AppColors.cardBackground,
